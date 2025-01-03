@@ -9,11 +9,7 @@ public class SampleController {
 
     @GetMapping("/hello")
     public String hello() {
+        System.out.println("Hello, GET!");
         return "Hello, GET!";
-    }
-
-    @PostMapping("/hello")
-    public String helloPost() {
-        return "Hello, POST!";
     }
 }
