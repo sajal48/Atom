@@ -1,9 +1,9 @@
 package com.sajal.atom.web;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class Server {
         tomcat.getConnector();
 
         servlets.forEach((path, servlet) -> {
-	        tomcat.addServlet("", path, servlet.getClass().getName());
+            tomcat.addServlet("", path, servlet.getClass().getName());
         });
 
         try {
