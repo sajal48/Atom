@@ -1,9 +1,16 @@
 package com.sajal.atom.web;
 
+import com.sajal.atom.annotations.web.Controller;
+import com.sajal.atom.annotations.web.GetMapping;
+import com.sajal.atom.annotations.web.PostMapping;
+import com.sajal.atom.web.httphandlers.GetHandler;
+import com.sajal.atom.web.httphandlers.PostHandler;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 public class Server {
     private Tomcat tomcat;
@@ -43,7 +50,24 @@ public class Server {
     }
 
     public void createContext(String path, Object handler) {
-        // Implement context creation logic if needed
         System.out.println("Creating context for path: " + path);
+    }
+
+    public void registerHandlers(Collection<Object> beans) {
+        for (Object bean : beans) {
+            if (bean.getClass().isAnnotationPresent(Controller.class)) {
+                for (Method method : bean.getClass().getDeclaredMethods()) {
+                    if (method.isAnnotationPresent(GetMapping.class)) {
+                        GetMapping getMapping = method.getAnnotation(GetMapping.class);
+                        createContext(getMapping.value(), new GetHandler(bean, method));
+                        System.out.println("Registered GET handler for path: " + getMapping.value());
+                    } else if (method.isAnnotationPresent(PostMapping.class)) {
+                        PostMapping postMapping = method.getAnnotation(PostMapping.class);
+                        createContext(postMapping.value(), new PostHandler(bean, method));
+                        System.out.println("Registered POST handler for path: " + postMapping.value());
+                    }
+                }
+            }
+        }
     }
 }

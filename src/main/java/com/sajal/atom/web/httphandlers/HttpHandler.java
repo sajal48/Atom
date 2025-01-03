@@ -1,4 +1,4 @@
-package com.sajal.atom.web;
+package com.sajal.atom.web.httphandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 

@@ -5,9 +5,10 @@ import com.sajal.atom.annotations.atom.AtomApplicationAnnotation;
 import com.sajal.atom.annotations.web.Controller;
 import com.sajal.atom.annotations.web.GetMapping;
 import com.sajal.atom.annotations.web.PostMapping;
+import com.sajal.atom.util.AtomAsciiLogo;
 import com.sajal.atom.util.TimestampedPrintStream;
-import com.sajal.atom.web.GetHandler;
-import com.sajal.atom.web.PostHandler;
+import com.sajal.atom.web.httphandlers.GetHandler;
+import com.sajal.atom.web.httphandlers.PostHandler;
 import com.sajal.atom.web.Server;
 
 import java.lang.reflect.Field;
@@ -20,9 +21,9 @@ public class AtomApplication {
     private Server server = new Server();
 
     public static void run(Class<?> mainClass) {
-        System.setOut(new TimestampedPrintStream(System.out));
-        System.setErr(new TimestampedPrintStream(System.err));
-
+        AtomAsciiLogo.printLogo();
+        System.setOut(new TimestampedPrintStream(System.out,false));
+        System.setErr(new TimestampedPrintStream(System.err,true));
         System.out.println("Starting AtomApplication...");
         AtomApplication application = new AtomApplication();
         application.initialize(mainClass);
@@ -32,19 +33,19 @@ public class AtomApplication {
     private void initialize(Class<?> mainClass) {
         System.out.println("Initializing application with main class: " + mainClass.getName());
         if (mainClass.isAnnotationPresent(AtomApplicationAnnotation.class)) {
-            beans.put(mainClass, createBean(mainClass));
+            beans.put(mainClass, createAtoms(mainClass));
             injectDependencies();
         } else {
             throw new RuntimeException("Main class must be annotated with @AtomApplicationAnnotation");
         }
     }
 
-    private Object createBean(Class<?> beanClass) {
-        System.out.println("Creating bean for class: " + beanClass.getName());
+    private Object createAtoms(Class<?> atomClass) {
+        System.out.println("Creating bean for class: " + atomClass.getName());
         try {
-            return beanClass.getDeclaredConstructor().newInstance();
+            return atomClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create bean: " + beanClass.getName(), e);
+            throw new RuntimeException("Failed to create bean: " + atomClass.getName(), e);
         }
     }
 
