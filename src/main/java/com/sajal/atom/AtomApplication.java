@@ -7,7 +7,7 @@ import com.sajal.atom.web.DispatcherServlet;
 import com.sajal.atom.web.Server;
 import com.sajal.atom.web.handler.HandlerRegistry;
 
-import javax.servlet.ServletException;
+
 import java.util.Map;
 
 public class AtomApplication {
@@ -48,11 +48,11 @@ public class AtomApplication {
         System.out.println("Starting server...");
         new Thread(() -> {
             try {
-                server.start(8080);
                 Map<Class<?>, Object> atoms = atomFactory.getAtoms();
                 System.out.println("Beans: " + atoms);
                 handlerRegistry.registerHandlers(atoms);
                 server.addServlet(new DispatcherServlet(handlerRegistry), "/*");
+                server.start(8080);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to start server", e);
             }

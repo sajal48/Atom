@@ -1,10 +1,12 @@
 package com.sajal.atom.web;
 
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
-import javax.servlet.http.HttpServlet;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +19,14 @@ public class Server {
         tomcat.setPort(port);
         tomcat.getConnector();
 
+        // Create and add context
+        Context context = tomcat.addContext("", null);
+
+        // Register servlets
         servlets.forEach((path, servlet) -> {
-            tomcat.addServlet("", path, servlet.getClass().getName());
+            String servletName = servlet.getClass().getName();
+            tomcat.addServlet("", servletName, servlet);
+            context.addServletMappingDecoded(path, servletName);
         });
 
         try {

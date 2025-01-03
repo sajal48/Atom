@@ -10,7 +10,7 @@ public class TimestampedPrintStream extends PrintStream {
 
     public TimestampedPrintStream(PrintStream original, boolean isErrorStream) {
         super(original);
-	    this.isErrorStream = isErrorStream;
+        this.isErrorStream = isErrorStream;
     }
 
     @Override
@@ -25,9 +25,9 @@ public class TimestampedPrintStream extends PrintStream {
     @Override
     public void println(Object message) {
         if (isErrorStream) {
-            super.println("\u001B[31m[" + getTimestamp() + "] \u001B[0m" + message );
+            super.println("\u001B[31m[" + getTimestamp() + "] \u001B[0m" + message);
         } else {
-            super.println("\u001B[32m[" + getTimestamp() + "] \u001B[0m" + message );
+            super.println("\u001B[32m[" + getTimestamp() + "] \u001B[0m" + message);
         }
     }
 

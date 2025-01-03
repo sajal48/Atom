@@ -4,9 +4,9 @@ import com.sajal.atom.annotations.web.Controller;
 import com.sajal.atom.annotations.web.GetMapping;
 import com.sajal.atom.annotations.web.PostMapping;
 import com.sajal.atom.web.httphandlers.HttpHandler;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
