@@ -25,6 +25,8 @@ public class HandlerRegistry {
     public void registerHandlers(Map<Class<?>, Object> atoms) {
         for (Object atom : atoms.values()) {
             if (atom.getClass().isAnnotationPresent(Controller.class)) {
+                Controller controllerAnnotation = atom.getClass().getAnnotation(Controller.class);
+                String basePath = controllerAnnotation.path();
                 for (Method method : atom.getClass().getDeclaredMethods()) {
                     for (Map.Entry<Class<? extends Annotation>, HandlerFactory> entry : factories.entrySet()) {
                         if (method.isAnnotationPresent(entry.getKey())) {
@@ -36,8 +38,9 @@ public class HandlerRegistry {
                                 path = ((PostMapping) annotation).value();
                             }
                             if (path != null) {
-                                handlers.put(path, entry.getValue().createHandler(atom, method));
-                                System.out.println("Registered handler for path: " + path);
+                                String fullPath = basePath + path;
+                                handlers.put(fullPath, entry.getValue().createHandler(atom, method));
+                                System.out.println("Registered handler for path: " + fullPath);
                             }
                         }
                     }

@@ -32,6 +32,7 @@ public class Server {
         try {
             tomcat.start();
             System.out.println("Tomcat server started on port: " + port);
+            tomcat.getServer().await();
         } catch (LifecycleException e) {
             throw new RuntimeException("Failed to start Tomcat server", e);
         }
