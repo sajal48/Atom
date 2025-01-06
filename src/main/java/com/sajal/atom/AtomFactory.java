@@ -16,20 +16,24 @@ public class AtomFactory {
     public void createAtoms(Class<?> mainClass) {
         System.out.println("Creating atom for class: " + mainClass.getName());
         try {
-            atoms.put(mainClass, mainClass.getDeclaredConstructor().newInstance());
+            Object mainInstance = mainClass.getDeclaredConstructor().newInstance();
+            atoms.put(mainClass, mainInstance);
+            injectDependencies(mainInstance);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create atom: " + mainClass.getName(), e);
         }
 
-        // Scan for classes annotated with @Controller and create instances
+        // Scan for classes annotated with @Atom and create instances
         Reflections reflections = new Reflections(mainClass.getPackage().getName());
+        Set<Class<?>> atomClasses = reflections.getTypesAnnotatedWith(Atom.class);
         Set<Class<?>> controllerClasses = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controllerClass : controllerClasses) {
+        atomClasses.addAll(controllerClasses);
+        for (Class<?> atomClass : atomClasses) {
             try {
-                atoms.put(controllerClass, controllerClass.getDeclaredConstructor().newInstance());
-                System.out.println("Created atom for controller: " + controllerClass.getName());
+                atoms.put(atomClass, atomClass.getDeclaredConstructor().newInstance());
+                System.out.println("Created atom for: " + atomClass.getName());
             } catch (Exception e) {
-                throw new RuntimeException("Failed to create atom for controller: " + controllerClass.getName(), e);
+                throw new RuntimeException("Failed to create atom for: " + atomClass.getName(), e);
             }
         }
     }
@@ -37,15 +41,19 @@ public class AtomFactory {
     public void injectDependencies() {
         System.out.println("Injecting dependencies...");
         for (Object atom : atoms.values()) {
-            for (Field field : atom.getClass().getDeclaredFields()) {
-                if (field.isAnnotationPresent(Atom.class)) {
-                    field.setAccessible(true);
-                    try {
-                        field.set(atom, atoms.get(field.getType()));
-                        System.out.println("Injected dependency: " + field.getType().getName() + " into " + atom.getClass().getName());
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException("Failed to inject dependencies", e);
-                    }
+            injectDependencies(atom);
+        }
+    }
+
+    private void injectDependencies(Object atom) {
+        for (Field field : atom.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(Atom.class)) {
+                field.setAccessible(true);
+                try {
+                    field.set(atom, atoms.get(field.getType()));
+                    System.out.println("Injected dependency: " + field.getType().getName() + " into " + atom.getClass().getName());
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Failed to inject dependencies", e);
                 }
             }
         }

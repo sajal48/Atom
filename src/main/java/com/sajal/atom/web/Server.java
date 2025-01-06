@@ -1,6 +1,5 @@
 package com.sajal.atom.web;
 
-import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
