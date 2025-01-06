@@ -39,6 +39,7 @@ public class AtomApplication {
         if (mainClass.isAnnotationPresent(AtomApplicationAnnotation.class)) {
             atomFactory.createAtoms(mainClass);
             atomFactory.injectDependencies();
+            AtomContext.getInstance().initialize(atomFactory);
         } else {
             throw new RuntimeException("Main class must be annotated with @AtomApplicationAnnotation");
         }

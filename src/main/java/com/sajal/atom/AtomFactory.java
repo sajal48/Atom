@@ -6,16 +6,15 @@ import com.sajal.atom.annotations.web.Controller;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.reflections.Reflections;
 
 import jakarta.annotation.PostConstruct;
 
 public class AtomFactory {
-    private final Map<Class<?>, Object> atoms = new HashMap<>();
+    private final Map<Class<?>, Object> atoms = new TreeMap<>(Comparator.comparing(Class::getName));
+    private final Map<Class<?>, List<Class<?>>> dependencyGraph = new HashMap<>();
 
     public void createAtoms(Class<?> mainClass) {
         System.out.println("Creating atom for class: " + mainClass.getName());
@@ -34,7 +33,21 @@ public class AtomFactory {
         Set<Class<?>> controllerClasses = reflections.getTypesAnnotatedWith(Controller.class);
         atomClasses.addAll(controllerClasses);
 
+        // Build dependency graph
         for (Class<?> atomClass : atomClasses) {
+            dependencyGraph.putIfAbsent(atomClass, new ArrayList<>());
+            for (Field field : atomClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Atom.class)) {
+                    dependencyGraph.get(atomClass).add(field.getType());
+                }
+            }
+        }
+
+        // Topological sort to determine the order of creation
+        List<Class<?>> sortedClasses = topologicalSort(atomClasses);
+
+        // Create instances in sorted order
+        for (Class<?> atomClass : sortedClasses) {
             try {
                 Object instance = createInstance(atomClass);
                 atoms.put(atomClass, instance);
@@ -96,6 +109,36 @@ public class AtomFactory {
                     throw new RuntimeException("Failed to inject dependencies", e);
                 }
             }
+        }
+    }
+
+    private List<Class<?>> topologicalSort(Set<Class<?>> classes) {
+        List<Class<?>> sortedList = new ArrayList<>();
+        Set<Class<?>> visited = new HashSet<>();
+        Set<Class<?>> visiting = new HashSet<>();
+
+        for (Class<?> clazz : classes) {
+            if (!visited.contains(clazz)) {
+                topologicalSortUtil(clazz, visited, visiting, sortedList);
+            }
+        }
+
+        return sortedList;
+    }
+
+    private void topologicalSortUtil(Class<?> clazz, Set<Class<?>> visited, Set<Class<?>> visiting, List<Class<?>> sortedList) {
+        if (visiting.contains(clazz)) {
+            throw new RuntimeException("Cyclic dependency detected: " + clazz.getName());
+        }
+
+        if (!visited.contains(clazz)) {
+            visiting.add(clazz);
+            for (Class<?> dependency : dependencyGraph.getOrDefault(clazz, Collections.emptyList())) {
+                topologicalSortUtil(dependency, visited, visiting, sortedList);
+            }
+            visiting.remove(clazz);
+            visited.add(clazz);
+            sortedList.add(clazz);
         }
     }
 
