@@ -8,8 +8,12 @@ import java.util.List;
 
 @Atom
 public class StudentService {
-    @Atom
-    private  StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
+
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
+
     public void init() {
         studentRepository.init();
     }
@@ -17,12 +21,15 @@ public class StudentService {
     public List<Student> getAllStudents() {
         return studentRepository.getAllStudents();
     }
+
     public Student getStudentById(int id) {
         return studentRepository.getStudentById(id);
     }
+
     public List<Student> getStudentsByName(String name) {
         return studentRepository.findAllByName(name);
     }
+
     public List<Student> getStudentsByAge(int age) {
         return studentRepository.findAllByAge(age);
     }
